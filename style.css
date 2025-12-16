@@ -704,3 +704,68 @@ footer {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(0,0,0,0.35);
 }
+
+
+
+/* ===================== BOOK NOW VIA WHATSAPP ===================== */
+.btn-whatsapp {
+  position: relative;
+  background: linear-gradient(135deg, #25d366, #1ebe5d);
+  color: #000 !important; /* BLACK TEXT */
+  font-weight: 600;
+  border: none !important;
+  border-radius: 14px;
+  padding: 14px 36px;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 10px 28px rgba(37, 211, 102, 0.35);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* REMOVE BOOTSTRAP WHITE HOVER */
+.btn-whatsapp:hover,
+.btn-whatsapp:focus,
+.btn-whatsapp:active {
+  background: linear-gradient(135deg, #1ebe5d, #17a851) !important;
+  color: #000 !important; /* KEEP TEXT BLACK */
+  border: none !important;
+  box-shadow: 0 16px 40px rgba(37, 211, 102, 0.45);
+  transform: translateY(-3px);
+}
+
+/* Shine animation */
+.btn-whatsapp::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transition: all 0.6s ease;
+}
+
+.btn-whatsapp:hover::before {
+  left: 120%;
+}
+
+/* Click effect */
+.btn-whatsapp:active {
+  transform: scale(0.97);
+  box-shadow: 0 8px 18px rgba(37, 211, 102, 0.35);
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .btn-whatsapp {
+    width: 100%;
+    font-size: 16px;
+    padding: 15px;
+  }
+}
