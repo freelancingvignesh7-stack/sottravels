@@ -71,6 +71,7 @@ a {
 }
 
 /* Custom cursor glow */
+/* Cursor glow – desktop only */
 .cursor-glow {
   position: fixed;
   width: 40px;
@@ -83,6 +84,14 @@ a {
   z-index: 999;
   opacity: 0.7;
 }
+
+/* Disable on tablets & mobiles */
+@media (max-width: 1024px) {
+  .cursor-glow {
+    display: none !important;
+  }
+}
+
 
 /* =========================================
    NAVBAR
