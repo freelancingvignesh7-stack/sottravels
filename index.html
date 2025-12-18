@@ -165,7 +165,6 @@
   <!-- ===================== BOOKING FORM ===================== -->
 
 
-
   <style>
   body{background:#f4f6f8}
   .card-box{background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
@@ -176,9 +175,14 @@
   .datetime-box{cursor:pointer}
 
   .vehicle-item{
-    border:1px solid #e5e5e5;border-radius:12px;
-    padding:12px 14px;display:flex;justify-content:space-between;
-    align-items:center;cursor:pointer;transition:.2s
+    border:1px solid #e5e5e5;
+    border-radius:12px;
+    padding:12px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    transition:.2s
   }
   .vehicle-item:hover{border-color:#0d6efd}
   .vehicle-item.active{border-color:#0d6efd;background:#f3f8ff}
@@ -238,7 +242,7 @@
   </div>
 
   <label class="small">Passengers</label>
-  <input type="number" id="pax" min="1" value="1" class="form-control mb-3">
+  <input type="number" id="pax" min="1" class="form-control mb-3">
 
   <div id="vehicleList" class="d-grid gap-2"></div>
 
@@ -260,8 +264,8 @@
   <div class="col-md-6">
   <label class="small">Phone</label>
   <input id="custPhone" class="form-control"
-  inputmode="numeric"
-  oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+         inputmode="numeric"
+         oninput="this.value=this.value.replace(/[^0-9]/g,'')">
   </div>
   </div>
 
@@ -273,7 +277,8 @@
   </div>
 
   <p class="note mt-3">
-  • KM & time calculated from office to office<br>
+  • KM & Time calculated from office to office<br>
+  • Tolls, Parkings, Permits, Hill charges are extra <br>
   • Night allowance applicable (9 PM – 6 AM)<br>
   • Extra KM & days charged as per vehicle tariff
   </p>
@@ -294,55 +299,54 @@
 
   <script>
   const OFFICE_LOCATION="Coimbatore, Tamil Nadu, India";
-  let selectedVehicle=null, finalKm=0, acc="No";
+  let selectedVehicle=null, finalKm=0, finalPrice=0, acc="No";
 
   const vehicles=[
   {v:'sedan',n:'Sedan',seat:'Swift, Etios – 4+1',d:2000,k:10,icon:'fa-car'},
   {v:'mpv',n:'MPV',seat:'Ertiga, Xylo, Innova – 6+1',d:2500,k:15,icon:'fa-car-side'},
   {v:'crysta',n:'Innova Crysta',seat:'7+1',d:3200,k:15,icon:'fa-car'},
+
+  {v:'tt12na',n:'Tempo Traveller Non-AC',seat:'12–14',d:3500,k:20,icon:'fa-bus'},
   {v:'tt12ac',n:'Tempo Traveller AC',seat:'12–14',d:4000,k:20,icon:'fa-bus'},
+
+  {v:'tt18na',n:'Tempo Traveller Non-AC',seat:'16–18',d:4500,k:22,icon:'fa-bus'},
   {v:'tt18ac',n:'Tempo Traveller AC',seat:'16–18',d:5000,k:22,icon:'fa-bus'},
+
   {v:'urbania12',n:'Urbania AC',seat:'12 Seater',d:6500,k:28,icon:'fa-van-shuttle'},
   {v:'urbania16',n:'Urbania AC',seat:'16 Seater',d:7500,k:28,icon:'fa-van-shuttle'}
   ];
 
   function scrollToTop(){
-    window.scrollTo({top:document.querySelector('.card-box').offsetTop-20,behavior:'instant'});
+  window.scrollTo({top:document.querySelector('.card-box').offsetTop-20,behavior:'instant'});
   }
 
   function goStep(n){
-    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-    document.getElementById('step'+n).classList.add('active');
-    setTimeout(scrollToTop,50);
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  setTimeout(scrollToTop,50);
   }
 
   function validateStep1(){
-    if(!pickup.value||!drop.value||!pickupDT.value||!dropDT.value){
-      alert("Please fill pickup, drop and dates");
-      return;
-    }
-    calculateDistance();
-    goStep(2);
+  if(!pickup.value||!drop.value||!pickupDT.value||!dropDT.value){
+  alert("Please fill pickup, drop and dates");
+  return;
+  }
+  calculateDistance();
+  goStep(2);
   }
 
   function validateStep2(){
-
-  const passengers = parseInt(pax.value, 10);
-
-  if(!passengers || passengers < 1){
-    alert("Please enter passenger count");
-    pax.focus();
-    return;
+  const p=parseInt(pax.value,10);
+  if(!p||p<1){
+  alert("Please enter passenger count");
+  pax.focus();return;
   }
-
   if(!selectedVehicle){
-    alert("Please select a vehicle");
-    return;
+  alert("Please select a vehicle");
+  return;
   }
-
   goStep(3);
-}
-
+  }
 
   function initAuto(){
   ['pickup','drop'].forEach(id=>{
@@ -371,10 +375,22 @@
   function calculateDistance(){
   const route=[pickup.value,...[...stops.children].map(i=>i.value),drop.value];
   const ds=new google.maps.DirectionsService();
-  ds.route({origin:route[0],destination:route[route.length-1],waypoints:route.slice(1,-1).map(l=>({location:l,stopover:true})),travelMode:'DRIVING'},res=>{
-  let km=0;res.routes[0].legs.forEach(l=>km+=l.distance.value);
+
+  ds.route({
+  origin:route[0],
+  destination:route[route.length-1],
+  waypoints:route.slice(1,-1).map(l=>({location:l,stopover:true})),
+  travelMode:'DRIVING'
+  },res=>{
+  let km=0;
+  res.routes[0].legs.forEach(l=>km+=l.distance.value);
   km/=1000;
-  ds.route({origin:route[route.length-1],destination:OFFICE_LOCATION,travelMode:'DRIVING'},ret=>{
+
+  ds.route({
+  origin:route[route.length-1],
+  destination:OFFICE_LOCATION,
+  travelMode:'DRIVING'
+  },ret=>{
   ret.routes[0].legs.forEach(l=>km+=l.distance.value/1000);
   finalKm=Math.round(km+(calcDays()*30));
   renderVehicles();
@@ -389,7 +405,7 @@
   vehicles.forEach(v=>{
   const price=Math.round((days*v.d)+(finalKm*v.k));
   vehicleList.innerHTML+=`
-  <div class="vehicle-item" onclick="selectVehicle('${v.v}',this)">
+  <div class="vehicle-item" onclick="selectVehicle('${v.v}',${price},this)">
   <div class="vehicle-left">
   <i class="fa ${v.icon} vehicle-icon"></i>
   <div>
@@ -402,8 +418,9 @@
   });
   }
 
-  function selectVehicle(v,el){
+  function selectVehicle(v,price,el){
   selectedVehicle=v;
+  finalPrice=price;
   document.querySelectorAll('.vehicle-item').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
   }
@@ -416,35 +433,55 @@
   const ap=h>=12?'PM':'AM';h=h%12||12;
   return `${d.toLocaleDateString('en-IN')} ${h}:${m} ${ap}`;
   }
-
   function sendWA(){
-  if(!custName.value.trim()){alert("Enter name");custName.focus();return;}
-  if(!custPhone.value||custPhone.value.length<8){alert("Enter valid phone");custPhone.focus();return;}
 
-  const v=vehicles.find(x=>x.v===selectedVehicle);
-  const msg=`Tour Fare Enquiry
+    if(!custName.value.trim()){
+      alert("Enter name");
+      custName.focus();
+      return;
+    }
+
+    if(!custPhone.value || custPhone.value.length < 8){
+      alert("Enter valid phone number");
+      custPhone.focus();
+      return;
+    }
+
+    const v = vehicles.find(x => x.v === selectedVehicle);
+
+    const msg =
+  `*TOUR FARE ENQUIRY*
+
+  *Customer Details*
   Name: ${custName.value}
   Phone: ${custPhone.value}
+
+  *Trip Details*
   Passengers: ${pax.value}
   Vehicle: ${v.n} (${v.seat})
-  KM Limit: ${finalKm} KM
   Pickup: ${pickup.value}
   Drop: ${drop.value}
   Pickup Time: ${format12(pickupDT.value)}
   Drop Time: ${format12(dropDT.value)}
   Accommodation: ${acc}
 
-  Kindly provide your best final price for this trip.`;
+  *Tariff & KM Details*
+  KM Limit: ${finalKm} KM
+  Estimated Fare: ₹ ${finalPrice.toLocaleString()}
 
-  window.open(`https://wa.me/919488840240?text=${encodeURIComponent(msg)}`);
+  Kindly confirm the best final price for this trip.`;
+
+    window.open(
+      `https://wa.me/919488840240?text=${encodeURIComponent(msg)}`,
+      '_blank'
+    );
   }
 
-  // disable past datetime
+  // Disable past dates
   const now=new Date().toISOString().slice(0,16);
   pickupDT.min=now;
   dropDT.min=now;
   </script>
-
 
 
 
