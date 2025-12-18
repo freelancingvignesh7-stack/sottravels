@@ -168,20 +168,27 @@
 
   <style>
   body{background:#f4f6f8}
-  .card-box{
-    background:#fff;
-    border-radius:16px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08)
+  .card-box{background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .step{display:none}
+  .step.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+  input,button{border-radius:10px!important}
+  .datetime-box{cursor:pointer}
+
+  .vehicle-item{
+    border:1px solid #e5e5e5;border-radius:12px;
+    padding:12px 14px;display:flex;justify-content:space-between;
+    align-items:center;cursor:pointer;transition:.2s
   }
-  .note{font-size:13px;color:#555}
-  .switch{
-    display:inline-flex;
-    gap:10px;
-    align-items:center;
-  }
-  .switch button{
-    min-width:60px
-  }
+  .vehicle-item:hover{border-color:#0d6efd}
+  .vehicle-item.active{border-color:#0d6efd;background:#f3f8ff}
+  .vehicle-left{display:flex;gap:10px;align-items:center}
+  .vehicle-icon{font-size:18px;color:#0d6efd}
+  .vehicle-name{font-weight:600;font-size:14px}
+  .vehicle-seat{font-size:12px;color:#666}
+  .vehicle-price{font-weight:700;color:#198754;font-size:15px}
+
+  .note{font-size:12.5px;color:#666;line-height:1.5}
   </style>
   </head>
 
@@ -190,315 +197,252 @@
   <section class="py-5">
   <div class="container">
   <div class="row justify-content-center">
-  <div class="col-lg-9">
+  <div class="col-lg-8">
 
   <div class="card-box p-4">
+  <h5 class="fw-bold text-center mb-4">Tour Fare Calculator</h5>
 
-  <h4 class="fw-bold text-center mb-4">Tour Fare Calculator</h4>
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+  <h6 class="fw-bold mb-3">Trip Details</h6>
+
+  <input id="pickup" class="form-control mb-2" placeholder="Pickup Location">
+  <div id="stops"></div>
+  <input id="drop" class="form-control mb-3" placeholder="Drop Location">
+
+  <button class="btn btn-sm btn-outline-secondary mb-3" onclick="addStop()">+ Add Stop</button>
+
+  <div class="row">
+  <div class="col-md-6 mb-2">
+  <label class="small">Pickup Date & Time</label>
+  <input type="datetime-local" id="pickupDT" class="form-control datetime-box">
+  </div>
+  <div class="col-md-6 mb-2">
+  <label class="small">Drop Date & Time</label>
+  <input type="datetime-local" id="dropDT" class="form-control datetime-box">
+  </div>
+  </div>
+
+  <div class="text-end mt-3">
+  <button class="btn btn-primary" onclick="validateStep1()">Next</button>
+  </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step2">
+  <h6 class="fw-bold mb-3">Choose Vehicle</h6>
+
+  <div class="mb-3 p-2 rounded bg-light d-flex justify-content-between">
+  <strong>Distance</strong>
+  <span class="fw-bold text-primary"><span id="distanceLabel">0</span> KM</span>
+  </div>
+
+  <label class="small">Passengers</label>
+  <input type="number" id="pax" min="1" value="1" class="form-control mb-3">
+
+  <div id="vehicleList" class="d-grid gap-2"></div>
+
+  <div class="d-flex justify-content-between mt-3">
+  <button class="btn btn-secondary" onclick="goStep(1)">Back</button>
+  <button class="btn btn-primary" onclick="validateStep2()">Continue</button>
+  </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step3">
+  <h6 class="fw-bold mb-3">Customer Details</h6>
 
   <div class="row g-3">
-
-  <!-- NAME / PHONE -->
   <div class="col-md-6">
-  <label>Name</label>
-  <input id="custName" class="form-control" placeholder="Customer Name">
-  </div>
-
-  <div class="col-md-6">
-  <label>Phone</label>
-  <input id="custPhone" class="form-control" placeholder="Mobile Number">
-  </div>
-
-  <!-- DATE TIME -->
-  <div class="col-md-3">
-  <label>Pickup Date</label>
-  <input type="date" id="pDate" class="form-control">
-  </div>
-
-  <div class="col-md-3">
-  <label>Pickup Time</label>
-  <input type="time" id="pTime" class="form-control">
-  </div>
-
-  <div class="col-md-3">
-  <label>Drop Date</label>
-  <input type="date" id="dDate" class="form-control">
-  </div>
-
-  <div class="col-md-3">
-  <label>Drop Time</label>
-  <input type="time" id="dTime" class="form-control">
-  </div>
-
-  <!-- LOCATIONS -->
-  <div class="mt-2">
-  <input id="pickup" class="form-control mb-2 stop" placeholder="Pickup Location">
-  <div id="stops"></div>
-  <input id="drop" class="form-control mb-2 stop" placeholder="Drop Location">
-  </div>
-
-  <button class="btn btn-sm btn-outline-secondary" onclick="addStop()">+ Add Stop</button>
-
-  <!-- PASSENGERS -->
-  <div class="col-md-4 mt-3">
-  <label>Passengers</label>
-  <input type="number" id="pax" min="1" value="1" class="form-control" oninput="filterVehicles()">
-  </div>
-
-  <!-- VEHICLE -->
-  <div class="col-md-8 mt-3">
-  <label>Vehicle</label>
-  <select id="vehicle" class="form-select"></select>
-  </div>
-
-  <!-- CALCULATE -->
-  <div class="text-center mt-4">
-  <button class="btn btn-primary px-5" onclick="calculateFare()">Calculate Fare</button>
-  </div>
-
-  <!-- RESULT -->
-  <div id="result" class="mt-4 d-none">
-  <hr>
-
-  <p><strong>Route:</strong> <span id="route"></span></p>
-  <p><strong>Total Distance:</strong> <span id="distance"></span></p>
-  <p><strong>Total Days:</strong> <span id="days"></span></p>
-
-  <h5 class="fw-bold">Tariff: <span id="fare"></span></h5>
-
-  <!-- INCLUSION / EXCLUSION -->
-  <div class="row mt-3">
-  <div class="col-md-6">
-  <strong>Inclusions</strong>
-  <ul>
-  <li>Fuel</li>
-  <li>Driver Allowance</li>
-  </ul>
+  <label class="small">Name</label>
+  <input id="custName" class="form-control">
   </div>
   <div class="col-md-6">
-  <strong>Exclusions</strong>
-  <ul>
-  <li>Toll</li>
-  <li>Parking</li>
-  <li>Permit Charges</li>
-  </ul>
+  <label class="small">Phone</label>
+  <input id="custPhone" class="form-control"
+  inputmode="numeric"
+  oninput="this.value=this.value.replace(/[^0-9]/g,'')">
   </div>
   </div>
 
-  <!-- ACCOMMODATION -->
-  <div class="mt-3 switch">
-  <strong>Accommodation:</strong>
+  <div class="mt-3 d-flex align-items-center gap-3">
+  <strong class="small">Accommodation:</strong>
   <button class="btn btn-outline-secondary btn-sm" onclick="setAcc('No')">No</button>
   <button class="btn btn-outline-success btn-sm" onclick="setAcc('Yes')">Yes</button>
-  <span id="accVal">No</span>
+  <span id="accVal" class="fw-semibold small">No</span>
   </div>
 
-  <!-- NOTES -->
   <p class="note mt-3">
-  • KM & time are calculated from office to office.<br>
-  • Night allowance applicable between 9:00 PM – 6:00 AM.<br>
-  • Extra kilometers and additional days will be charged as per the selected vehicle tariff.<br>
-  • Final price may vary based on the itinerary.
+  • KM & time calculated from office to office<br>
+  • Night allowance applicable (9 PM – 6 AM)<br>
+  • Extra KM & days charged as per vehicle tariff
   </p>
 
-
-  <!-- WHATSAPP -->
-  <div class="text-center mt-3">
-  <button class="btn btn-success px-4" onclick="sendWA()">Send to WhatsApp</button>
+  <div class="d-flex justify-content-between mt-3">
+  <button class="btn btn-secondary" onclick="goStep(2)">Back</button>
+  <button class="btn btn-success px-4" onclick="sendWA()">Enquire Now</button>
+  </div>
   </div>
 
   </div>
-
   </div>
   </div>
   </div>
   </section>
 
-  <!-- GOOGLE MAPS -->
-  <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3_umWiJ33K2cFXAvq24e3q5m1_ZUBEHQ&libraries=places&callback=initAuto"
-  async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3_umWiJ33K2cFXAvq24e3q5m1_ZUBEHQ&libraries=places"></script>
 
   <script>
-
-  const OFFICE_LOCATION = "Coimbatore, Tamil Nadu, India";
-
-  let acc="No";
-
-  /* PRICING */
-  const pricing={
-  sedan:[2000,10],
-  mpv:[2500,15],
-  crysta:[3200,15],
-  tt12na:[3500,20],
-  tt12ac:[4000,20],
-  tt18na:[4500,22],
-  tt18ac:[5000,22]
-  };
+  const OFFICE_LOCATION="Coimbatore, Tamil Nadu, India";
+  let selectedVehicle=null, finalKm=0, acc="No";
 
   const vehicles=[
-  {v:'sedan',l:'Sedan (4+1)',min:1,max:4},
-  {v:'mpv',l:'MPV (6+1 / 7+1)',min:1,max:6},
-  {v:'crysta',l:'Innova Crysta',min:5,max:7},
-  {v:'tt12na',l:'TT 12–14 Non-AC',min:5,max:18},
-  {v:'tt12ac',l:'TT 12–14 AC',min:5,max:18},
-  {v:'tt18na',l:'TT 16–18 Non-AC',min:7,max:18},
-  {v:'tt18ac',l:'TT 16–18 AC',min:7,max:18}
+  {v:'sedan',n:'Sedan',seat:'Swift, Etios – 4+1',d:2000,k:10,icon:'fa-car'},
+  {v:'mpv',n:'MPV',seat:'Ertiga, Xylo, Innova – 6+1',d:2500,k:15,icon:'fa-car-side'},
+  {v:'crysta',n:'Innova Crysta',seat:'7+1',d:3200,k:15,icon:'fa-car'},
+  {v:'tt12ac',n:'Tempo Traveller AC',seat:'12–14',d:4000,k:20,icon:'fa-bus'},
+  {v:'tt18ac',n:'Tempo Traveller AC',seat:'16–18',d:5000,k:22,icon:'fa-bus'},
+  {v:'urbania12',n:'Urbania AC',seat:'12 Seater',d:6500,k:28,icon:'fa-van-shuttle'},
+  {v:'urbania16',n:'Urbania AC',seat:'16 Seater',d:7500,k:28,icon:'fa-van-shuttle'}
   ];
 
-  /* AUTOCOMPLETE */
-  function initAuto(){
-  ['pickup','drop'].forEach(id=>{
-  new google.maps.places.Autocomplete(
-  document.getElementById(id),
-  {componentRestrictions:{country:'in'}}
-  );
-  });
+  function scrollToTop(){
+    window.scrollTo({top:document.querySelector('.card-box').offsetTop-20,behavior:'instant'});
   }
 
-  /* ADD STOP */
+  function goStep(n){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.getElementById('step'+n).classList.add('active');
+    setTimeout(scrollToTop,50);
+  }
+
+  function validateStep1(){
+    if(!pickup.value||!drop.value||!pickupDT.value||!dropDT.value){
+      alert("Please fill pickup, drop and dates");
+      return;
+    }
+    calculateDistance();
+    goStep(2);
+  }
+
+  function validateStep2(){
+
+  const passengers = parseInt(pax.value, 10);
+
+  if(!passengers || passengers < 1){
+    alert("Please enter passenger count");
+    pax.focus();
+    return;
+  }
+
+  if(!selectedVehicle){
+    alert("Please select a vehicle");
+    return;
+  }
+
+  goStep(3);
+}
+
+
+  function initAuto(){
+  ['pickup','drop'].forEach(id=>{
+  new google.maps.places.Autocomplete(document.getElementById(id),{componentRestrictions:{country:'in'}});
+  });
+  }
+  initAuto();
+
   function addStop(){
   const i=document.createElement('input');
-  i.className='form-control mb-2 stop';
+  i.className='form-control mb-2';
   i.placeholder='Intermediate Stop';
   stops.appendChild(i);
   new google.maps.places.Autocomplete(i,{componentRestrictions:{country:'in'}});
   }
 
-  /* VEHICLE FILTER */
-  function filterVehicles(){
-  vehicle.innerHTML='<option value="">Select Vehicle</option>';
-  const p=+pax.value;
-  vehicles.forEach(o=>{
-  if(p>=o.min && p<=o.max){
-  vehicle.innerHTML+=`<option value="${o.v}">${o.l}</option>`;
+  function calcDays(){
+  if(!pickupDT.value||!dropDT.value) return 1;
+  const s=new Date(pickupDT.value);
+  const e=new Date(dropDT.value);
+  const sd=new Date(s.getFullYear(),s.getMonth(),s.getDate());
+  const ed=new Date(e.getFullYear(),e.getMonth(),e.getDate());
+  return Math.max(1,Math.round((ed-sd)/(1000*60*60*24))+1);
   }
+
+  function calculateDistance(){
+  const route=[pickup.value,...[...stops.children].map(i=>i.value),drop.value];
+  const ds=new google.maps.DirectionsService();
+  ds.route({origin:route[0],destination:route[route.length-1],waypoints:route.slice(1,-1).map(l=>({location:l,stopover:true})),travelMode:'DRIVING'},res=>{
+  let km=0;res.routes[0].legs.forEach(l=>km+=l.distance.value);
+  km/=1000;
+  ds.route({origin:route[route.length-1],destination:OFFICE_LOCATION,travelMode:'DRIVING'},ret=>{
+  ret.routes[0].legs.forEach(l=>km+=l.distance.value/1000);
+  finalKm=Math.round(km+(calcDays()*30));
+  renderVehicles();
+  });
   });
   }
-  filterVehicles();
 
-  /* DAYS */
-  function calcDays(){
-  const s=new Date(`${pDate.value}T${pTime.value}`);
-  const e=new Date(`${dDate.value}T${dTime.value}`);
-  return Math.max(1,Math.ceil((e-s)/(1000*60*60*24)));
+  function renderVehicles(){
+  distanceLabel.innerText=finalKm;
+  vehicleList.innerHTML='';
+  const days=calcDays();
+  vehicles.forEach(v=>{
+  const price=Math.round((days*v.d)+(finalKm*v.k));
+  vehicleList.innerHTML+=`
+  <div class="vehicle-item" onclick="selectVehicle('${v.v}',this)">
+  <div class="vehicle-left">
+  <i class="fa ${v.icon} vehicle-icon"></i>
+  <div>
+  <div class="vehicle-name">${v.n}</div>
+  <div class="vehicle-seat">${v.seat}</div>
+  </div>
+  </div>
+  <div class="vehicle-price">₹ ${price.toLocaleString()}</div>
+  </div>`;
+  });
   }
 
-  /* CALCULATE */
-  function calculateFare(){
-
-    const mainRoute = [
-      pickup.value,
-      ...[...stops.children].map(i => i.value),
-      drop.value
-    ];
-
-    const directionsService = new google.maps.DirectionsService();
-
-    // 1️⃣ MAIN ROUTE (VISIBLE)
-    directionsService.route({
-      origin: mainRoute[0],
-      destination: mainRoute[mainRoute.length - 1],
-      waypoints: mainRoute.slice(1, -1).map(l => ({
-        location: l,
-        stopover: true
-      })),
-      travelMode: 'DRIVING',
-      avoidFerries: true
-    }, (mainResult, status) => {
-
-      if (status !== "OK") {
-        alert("Unable to calculate main route");
-        return;
-      }
-
-      let totalKm = 0;
-      mainResult.routes[0].legs.forEach(l => {
-        totalKm += l.distance.value;
-      });
-      totalKm = totalKm / 1000;
-
-      // 2️⃣ HIDDEN RETURN ROUTE (LAST → COIMBATORE)
-      directionsService.route({
-        origin: mainRoute[mainRoute.length - 1],
-        destination: OFFICE_LOCATION,
-        travelMode: 'DRIVING',
-        avoidFerries: true
-      }, (returnResult, status2) => {
-
-        if (status2 !== "OK") {
-          alert("Unable to calculate return route");
-          return;
-        }
-
-        let returnKm = 0;
-        returnResult.routes[0].legs.forEach(l => {
-          returnKm += l.distance.value;
-        });
-        returnKm = returnKm / 1000;
-
-        // 3️⃣ TOTAL KM (HIDDEN ROUND TRIP)
-        let finalKm = totalKm + returnKm;
-
-        // 4️⃣ DAYS
-        const d = calcDays();
-
-        // 5️⃣ SIGHTSEEING BUFFER (+30 KM / DAY)
-        finalKm += d * 30;
-
-        // 6️⃣ FARE
-        const [dayRent, perKm] = pricing[vehicle.value];
-        const totalFare = (d * dayRent) + (finalKm * perKm);
-
-        // DISPLAY (CUSTOMER VIEW)
-        route.innerText = mainRoute.join(" > ");
-        distance.innerText = finalKm.toFixed(2) + " km";
-        days.innerText = d + " day(s)";
-        fare.innerText = "₹ " + totalFare.toFixed(0);
-
-        result.classList.remove('d-none');
-      });
-
-    });
+  function selectVehicle(v,el){
+  selectedVehicle=v;
+  document.querySelectorAll('.vehicle-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
   }
 
+  function setAcc(v){acc=v;accVal.innerText=v;}
 
-  /* ACCOMMODATION */
-  function setAcc(v){
-  acc=v;
-  accVal.innerText=v;
+  function format12(dt){
+  const d=new Date(dt);
+  let h=d.getHours(),m=d.getMinutes().toString().padStart(2,'0');
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  return `${d.toLocaleDateString('en-IN')} ${h}:${m} ${ap}`;
   }
 
-  /* WHATSAPP */
   function sendWA(){
+  if(!custName.value.trim()){alert("Enter name");custName.focus();return;}
+  if(!custPhone.value||custPhone.value.length<8){alert("Enter valid phone");custPhone.focus();return;}
 
-    const vehicleText =
-      vehicle.options[vehicle.selectedIndex]?.text || 'Not selected';
-
-    const msg = `Tour Fare Enquiry
+  const v=vehicles.find(x=>x.v===selectedVehicle);
+  const msg=`Tour Fare Enquiry
   Name: ${custName.value}
   Phone: ${custPhone.value}
   Passengers: ${pax.value}
-  Vehicle: ${vehicleText}
-  Route: ${route.innerText}
-  Distance: ${distance.innerText}
-  Days: ${days.innerText}
-  Fare: ${fare.innerText}
+  Vehicle: ${v.n} (${v.seat})
+  KM Limit: ${finalKm} KM
+  Pickup: ${pickup.value}
+  Drop: ${drop.value}
+  Pickup Time: ${format12(pickupDT.value)}
+  Drop Time: ${format12(dropDT.value)}
   Accommodation: ${acc}
 
   Kindly provide your best final price for this trip.`;
 
-    window.open(
-      `https://wa.me/919488840240?text=${encodeURIComponent(msg)}`,
-      '_blank'
-    );
+  window.open(`https://wa.me/919488840240?text=${encodeURIComponent(msg)}`);
   }
 
-
-  /* DISABLE PAST DATES */
-  const today=new Date().toISOString().split('T')[0];
-  pDate.min=today;
-  dDate.min=today;
+  // disable past datetime
+  const now=new Date().toISOString().slice(0,16);
+  pickupDT.min=now;
+  dropDT.min=now;
   </script>
 
 
